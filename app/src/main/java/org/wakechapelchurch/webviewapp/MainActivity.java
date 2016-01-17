@@ -22,7 +22,6 @@ public class MainActivity extends AppCompatActivity {
     if (dbg.equals("ON")) Log.w("AppLog_Debug", logPrint);
     }
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
