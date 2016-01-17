@@ -37,8 +37,6 @@ public class MainActivity extends AppCompatActivity {
         //view.setBackgroundColor(Color.argb(1, 0, 0, 0)); // trying to remove white flash. Doesn't seem to be working
         //view.setBackgroundColor(Color.BLACK); // still trying to remove white flash. not working.
         view.loadUrl(url);
-
-
     }
 
 
