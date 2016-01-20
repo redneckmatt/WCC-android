@@ -10,8 +10,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.MenuItem;
+import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -21,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     public void dbgPrint(String logPrint){
     if (dbg.equals("ON")) Log.w("AppLog_Debug", logPrint);
     }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,18 +37,72 @@ public class MainActivity extends AppCompatActivity {
         //view.setWebViewClient(new WebViewClient()); //make all links followed stay inside the app
         view.setWebViewClient(new CustomWebViewClient());//jump to CustomWebViewClient, which allows ?fullsite to jump out of webView
         view.getSettings().setJavaScriptEnabled(true); //necessary for CPM mobile functions
-        //view.getSettings().setDomStorageEnabled(true); //maybe necessary?
         //view.setBackgroundColor(Color.argb(1, 0, 0, 0)); // trying to remove white flash. Doesn't seem to be working
         //view.setBackgroundColor(Color.BLACK); // still trying to remove white flash. not working.
+
         view.loadUrl(url);
     }
+
+
 
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         WebView view=(WebView) this.findViewById(R.id.webView);
+
+        //Detects every touch event. Currently will not run unless hardware back key pressed at least once beforehand.
+        view.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                dbgPrint("Touch detected");
+                //v.performClick();
+
+                /*
+                Need some way of detecting what was clicked. Since in javascript, there is no URI to parse.
+
+                javascript: class="shelf btn" href="#"   <-- Left top button
+                javascript: class="menu" href="#"   <-- Right top button (Menu)
+
+                When the right top Menu is open, <header class="on"> | <a class="menu on"> | <ul id="nav" style="display: block;">
+                When the right top Menu is closed, <header class> | <a class="menu"> | <ul id="nav" style="display: none;">
+
+                When the left top menu (Service Times & Directions) is open, <section id="shelf" style="display: block;">
+                When the left top menu (Service Times & Directions) is closed, <section id="shelf" style="display: none;">
+
+                //From the web page source for "shelf btn":
+                $(document).ready(function(){
+                    $('header a.shelf').click(function(){
+                        $('#shelf').slideToggle();
+                        return false
+                    })
+                })
+
+
+                Ways to detect what was clicked:
+                1) parse the HTML elements to figure out the state of the menus, after each touch
+                2) watch the javascript for function calls
+
+
+
+                Usage:
+                If either menu extended, set var1 showing status and var2 showing current http location
+                Then, if hardware back pressed: clear var1 & view.loadUrl(var2). This effectively closes the menu without losing place.
+
+                */
+                return false;
+            }
+        });
+
+
         // Check if the key event was the Back button
         if (keyCode == KeyEvent.KEYCODE_BACK) {
+
+            //Here we need to put a check to see if one of the dropdown menu buttons was clicked.
+            //create a function to monitor for the javascript menu events. Global var.
+            //If var returns positive, close the menu first. Otherwise continue checking for history.
+
+
+
             if (view.canGoBack()) { //if there is a backwards traversible history
                 dbgPrint("Back Pressed, navigating backwards");
                 view.goBack();
@@ -56,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
             //view.loadUrl(url);
             return false;
         }
+
         return false;
     }
 
@@ -70,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            String urlQuery="";
+            String urlQuery;
             urlQuery=Uri.parse(url).getQuery();
             String urlHost=Uri.parse(url).getHost();
             dbgPrint("urlQuery: " + urlQuery + " | urlHost: " + urlHost);
