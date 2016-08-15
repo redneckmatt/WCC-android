@@ -121,10 +121,10 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
-
     // The link for fullsite: wakechapelchurch.org/?fullsite=yes
     // This will allow the page to jump out of webView
+
+
     private class CustomWebViewClient extends WebViewClient {
 
 
@@ -143,13 +143,22 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
 
+
+            // break out of webView if youtube video is played. WebView is unstable with video.
+            if (Uri.parse(url).getPath().contains("video_embed")) {
+                dbgPrint("VideoEmbed found.");
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                startActivity(intent);
+                return true;
+            }
+
             // load appropriate links inside webView
             if (Uri.parse(url).getHost().equals("wakechapelchurch.org")) {
                 dbgPrint("urlHost: " + urlHost + ", Loading inside webView. Url: " + url);
-                view.setBackgroundColor(Color.argb(1, 0, 0, 0)); //testing
+                //view.setBackgroundColor(Color.argb(1, 0, 0, 0)); //testing
                 return false;
             }
-            // Otherwise, the link is not for a page on my site, so launch another Activity that handles URLs
+            // Otherwise, the link is not for a page on the site, so launch another Activity that handles URLs
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             dbgPrint("url: " + url + ", breaking out of webView");
             startActivity(intent);
